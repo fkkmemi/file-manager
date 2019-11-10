@@ -1,24 +1,30 @@
-# ve
+# file-manager
 
-## Project setup
-```
-yarn install
-```
+## install
 
-### Compiles and hot-reloads for development
-```
-yarn serve
+```bash
+$ yarn
 ```
 
-### Compiles and minifies for production
-```
-yarn build
+## env setting
+
+make env file
+
+**.env.local**  
+```javascript
+VUE_APP_PASSWORD=YOUR_PASS
 ```
 
-### Lints and fixes files
-```
-yarn lint
+> this is super admin password
+
+## debug
+
+```bash
+$ yarn electron:serve
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## deploy
+
+```bash
+$ yarn electron:build
+```

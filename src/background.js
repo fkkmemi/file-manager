@@ -3,6 +3,7 @@
 import { app, protocol, BrowserWindow } from 'electron'
 import {
   createProtocol,
+  // eslint-disable-next-line no-unused-vars
   installVueDevtools
 } from 'vue-cli-plugin-electron-builder/lib'
 const isDevelopment = process.env.NODE_ENV !== 'production'
@@ -12,13 +13,15 @@ const isDevelopment = process.env.NODE_ENV !== 'production'
 let win
 
 // Scheme must be registered before the app is ready
-protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: { secure: true, standard: true } }])
+protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { secure: true, standard: true } }])
 
 function createWindow () {
   // Create the browser window.
-  win = new BrowserWindow({ width: 800, height: 600, webPreferences: {
-    nodeIntegration: true
-  } })
+  win = new BrowserWindow({ width: 800,
+    height: 600,
+    webPreferences: {
+      nodeIntegration: true
+    } })
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
@@ -39,9 +42,9 @@ function createWindow () {
 app.on('window-all-closed', () => {
   // On macOS it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
+  // if (process.platform !== 'darwin') {
+  app.quit()
+  // }
 })
 
 app.on('activate', () => {
