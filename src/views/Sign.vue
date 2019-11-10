@@ -3,12 +3,14 @@
     <v-row align="center" justify="center">
       <v-card width="400">
         <v-card-title>Connect to database</v-card-title>
+        <v-divider></v-divider>
         <v-card-text>
           <v-form ref="form" v-model="valid" lazy-validation>
             <v-text-field v-model="form.name" label="DB name" :rules="rules"></v-text-field>
             <v-text-field v-model="form.password" label="password" type="password" @keypress.enter="signIn" :rules="rules"></v-text-field>
           </v-form>
         </v-card-text>
+        <v-divider></v-divider>
         <v-card-actions>
           <v-btn text color="primary" @click="signIn">signIn</v-btn>
         </v-card-actions>
