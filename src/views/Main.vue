@@ -53,7 +53,12 @@
         item-key="_id"
       >
         <template v-slot:item.name="{ item }">
-          <a @click="execute(item)">{{item.name}}</a>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on }">
+              <span v-on="on"><a @click="execute(item)">{{item.name}}</a></span>
+            </template>
+            <span>{{item.path}}</span>
+          </v-tooltip>
         </template>
         <template v-slot:item.time="{ item }">
           {{ new Date(item.time).toLocaleDateString() }}
@@ -77,11 +82,9 @@
             <v-icon>{{`mdi-numeric-${item.rating}`}}</v-icon>
           </v-chip>
         </template>
-        <template v-slot:item.copy="{ item }">
-          <!-- <v-chip small color="lime" dark> -->
-            <v-icon color="blue-grey">{{`mdi-numeric-${item.copy}-box-multiple`}}</v-icon>
-          <!-- </v-chip> -->
-        </template>
+        <!-- <template v-slot:item.copy="{ item }">
+          <v-icon color="blue-grey">{{`mdi-numeric-${item.copy}-box-multiple`}}</v-icon>
+        </template> -->
         <template v-slot:item._id="{ item }">
           <v-btn icon @click="openDialog(item)" color="primary"><v-icon>mdi-pencil</v-icon></v-btn>
         </template>
@@ -109,7 +112,7 @@
             clearable
             v-model="selectedItem.rating"
             ></v-rating>
-          <v-rating
+          <!-- <v-rating
             dense
             color="success"
             background-color="grey lighten-1"
@@ -118,7 +121,21 @@
             length="9"
             clearable
             v-model="selectedItem.copy"
-            ></v-rating>
+            ></v-rating> -->
+            <div class="mt-10"></div>
+            <v-slider
+              label="copy"
+              thumb-label="always"
+              max="25"
+              v-model="selectedItem.copy"
+              ></v-slider>
+            <div class="mt-10"></div>
+            <v-slider
+              label="amount"
+              thumb-label="always"
+              max="60"
+              v-model="selectedItem.amount"
+              ></v-slider>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -152,6 +169,7 @@ export default {
         { value: 'tags', text: 'tags' },
         { value: 'rating', text: 'rating' },
         { value: 'copy', text: 'copy' },
+        { value: 'amount', text: 'amount' },
         { value: '_id', text: 'modify' }
       ],
       items: [],
@@ -199,6 +217,9 @@ export default {
       if (this.searchTags.length) find.tags = { $in: this.searchTags }
       this.totalCount = await this.db.count(find)
       const rs = await this.db.find(find).sort(sort).skip(skip).limit(this.options.itemsPerPage)
+      rs.forEach(v => {
+        if (v.amount === undefined) v.amount = 0
+      })
       this.items = rs
       this.addTag()
     },
@@ -220,6 +241,7 @@ export default {
           size: stat.size,
           rating: 0,
           copy: 1,
+          amount: 0,
           tags: []
         }
         const fr = await this.db.findOne({ path: p })
@@ -243,6 +265,7 @@ export default {
         size: stat.size,
         rating: 0,
         copy: 1,
+        amount: 0,
         tags: []
       }
       const fr = await this.db.findOne({ path: p })
@@ -250,7 +273,19 @@ export default {
       await this.db.insert(item)
       await this.fetch()
     },
-    execute (item) {
+    async execute (item) {
+      if (!fs.existsSync(item.path)) {
+        const r = await this.$swal.fire({
+          title: item.name + '가 없습니다. 삭제하시겠습니까?',
+          text: '경로: ' + item.path,
+          icon: 'error',
+          showCancelButton: true
+        })
+        if (!r.value) return
+        await this.db.remove({ _id: item._id })
+        await this.fetch()
+        return
+      }
       shell.openItem(item.path)
     },
     openDialog (item) {
@@ -298,7 +333,8 @@ export default {
       const set = {
         tags: this.selectedItem.tags,
         rating: this.selectedItem.rating,
-        copy: this.selectedItem.copy
+        copy: this.selectedItem.copy,
+        amount: this.selectedItem.amount
       }
       await this.db.update({ _id: this.selectedItem._id }, { $set: set })
       this.addTag()
