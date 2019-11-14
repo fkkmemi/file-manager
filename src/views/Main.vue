@@ -63,6 +63,9 @@
         <template v-slot:item.time="{ item }">
           {{ new Date(item.time).toLocaleDateString() }}
         </template>
+        <template v-slot:item.updatedAt="{ item }">
+          {{ new Date(item.updatedAt).toLocaleDateString() }}
+        </template>
         <template v-slot:item.size="{ item }">
           {{ byte(item.size) }}
         </template>
@@ -152,6 +155,7 @@ const { dialog } = require('electron').remote
 const fs = require('fs')
 const path = require('path')
 const byte = require('bytes')
+const moment = require('moment')
 const Datastore = require('nedb-promises')
 
 export default {
@@ -164,7 +168,8 @@ export default {
         // { value: '_id', text: '_id' },
         { value: 'name', text: 'name' },
         // { value: 'path', text: 'path' },
-        { value: 'time', text: 'time' },
+        { value: 'time', text: 'createdAt' },
+        { value: 'updatedAt', text: 'updatedAt' },
         { value: 'size', text: 'size' },
         { value: 'tags', text: 'tags' },
         { value: 'rating', text: 'rating' },
@@ -219,6 +224,7 @@ export default {
       const rs = await this.db.find(find).sort(sort).skip(skip).limit(this.options.itemsPerPage)
       rs.forEach(v => {
         if (v.amount === undefined) v.amount = 0
+        if (v.updatedAt === undefined) v.updatedAt = v.time
       })
       this.items = rs
       this.addTag()
@@ -330,7 +336,9 @@ export default {
       await this.fetch()
     },
     async save () {
+      this.selectedItem.updatedAt = moment().valueOf()
       const set = {
+        updatedAt: this.selectedItem.updatedAt,
         tags: this.selectedItem.tags,
         rating: this.selectedItem.rating,
         copy: this.selectedItem.copy,
