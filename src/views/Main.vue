@@ -175,6 +175,7 @@ export default {
         { value: 'rating', text: 'rating' },
         { value: 'copy', text: 'copy' },
         { value: 'amount', text: 'amount' },
+        { value: 'view', text: 'view' },
         { value: '_id', text: 'modify' }
       ],
       items: [],
@@ -219,12 +220,19 @@ export default {
       const skip = this.options.page > 0 ? (this.options.page - 1) * this.options.itemsPerPage : 0
       const find = {}
       if (this.search) find.name = { $regex: new RegExp(this.search, 'i') }
-      if (this.searchTags.length) find.tags = { $in: this.searchTags }
+      if (this.searchTags.length) {
+        // find.tags = { $in: this.searchTags }
+        find['$and'] = []
+        this.searchTags.forEach(v => {
+          find['$and'].push({ tags: v })
+        })
+      }
       this.totalCount = await this.db.count(find)
       const rs = await this.db.find(find).sort(sort).skip(skip).limit(this.options.itemsPerPage)
       rs.forEach(v => {
         if (v.amount === undefined) v.amount = 0
         if (v.updatedAt === undefined) v.updatedAt = v.time
+        if (v.view === undefined) v.view = 0
       })
       this.items = rs
       this.addTag()
@@ -248,6 +256,7 @@ export default {
           rating: 0,
           copy: 1,
           amount: 0,
+          view: 0,
           tags: []
         }
         const fr = await this.db.findOne({ path: p })
@@ -272,6 +281,7 @@ export default {
         rating: 0,
         copy: 1,
         amount: 0,
+        view: 0,
         tags: []
       }
       const fr = await this.db.findOne({ path: p })
@@ -292,6 +302,11 @@ export default {
         await this.fetch()
         return
       }
+      if (item.view === 0) {
+        this.db.update({ _id: item._id }, { $set: { view: 1 } })
+      } else {
+        this.db.update({ _id: item._id }, { $inc: { view: 1 } })
+      }
       shell.openItem(item.path)
     },
     openDialog (item) {
@@ -305,10 +320,6 @@ export default {
           if (!this.tags.includes(tag)) this.tags.push(tag)
         })
       })
-    },
-    async delTag (item, tag) {
-      await this.db.update({ _id: item._id }, { $pull: { tags: tag } })
-      await this.fetch()
     },
     async del () {
       const r = await this.$swal.fire({
@@ -333,6 +344,14 @@ export default {
       })
       if (!r.value) return
       await this.db.remove({}, { multi: true })
+      await this.fetch()
+    },
+    async delTag (item, tag) {
+      item.updatedAt = moment().valueOf()
+      const set = {
+        updatedAt: item.updatedAt
+      }
+      await this.db.update({ _id: item._id }, { $set: set, $pull: { tags: tag } })
       await this.fetch()
     },
     async save () {
