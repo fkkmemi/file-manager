@@ -101,6 +101,12 @@
           <v-btn icon @click="dialog = false"><v-icon>mdi-close</v-icon></v-btn>
         </v-card-title>
         <v-card-text>
+          <v-text-field
+            v-model="selectedItem.name"
+            label="File name"
+          >
+
+          </v-text-field>
           <v-combobox
             v-model="selectedItem.tags"
             :items="tags"
@@ -307,6 +313,7 @@ export default {
       } else {
         this.db.update({ _id: item._id }, { $inc: { view: 1 } })
       }
+      item.view++
       shell.openItem(item.path)
     },
     openDialog (item) {
@@ -336,7 +343,7 @@ export default {
     },
     async delAll () {
       const r = await this.$swal.fire({
-        title: '정말 삭제하시겠습니까?',
+        title: '정말 모두 삭제하시겠습니까?',
         text: '삭제 후 되돌릴 수 없습니다.',
         icon: 'error',
         // confirmButtonText: 'Cool',
@@ -362,6 +369,13 @@ export default {
         rating: this.selectedItem.rating,
         copy: this.selectedItem.copy,
         amount: this.selectedItem.amount
+      }
+      const before = await this.db.findOne({ _id: this.selectedItem._id })
+      if (before.name !== this.selectedItem.name) {
+        const newPath = path.join(path.dirname(before.path), this.selectedItem.name)
+        fs.renameSync(before.path, newPath)
+        set.path = newPath
+        set.name = this.selectedItem.name
       }
       await this.db.update({ _id: this.selectedItem._id }, { $set: set })
       this.addTag()
