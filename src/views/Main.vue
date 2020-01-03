@@ -214,8 +214,7 @@ export default {
     }
   },
   mounted () {
-    // console.log(this.$route.query.db)
-    // this.fetch()
+    this.addTags()
   },
   methods: {
     async fetch () {
@@ -241,7 +240,6 @@ export default {
         if (v.view === undefined) v.view = 0
       })
       this.items = rs
-      this.addTag()
     },
     async readDir () {
       const rs = dialog.showOpenDialogSync({
@@ -320,8 +318,9 @@ export default {
       this.selectedItem = item
       this.dialog = true
     },
-    addTag () {
-      this.items.forEach(item => {
+    async addTags () {
+      const items = await this.db.find({}, { tags: 1 })
+      items.forEach(item => {
         const tags = item.tags
         tags.forEach(tag => {
           if (!this.tags.includes(tag)) this.tags.push(tag)
@@ -378,8 +377,8 @@ export default {
         set.name = this.selectedItem.name
       }
       await this.db.update({ _id: this.selectedItem._id }, { $set: set })
-      this.addTag()
       this.dialog = false
+      this.addTags()
     },
     rating2obj (r) {
       const item = {
