@@ -224,7 +224,7 @@ export default {
       sort[name] = asc
       const skip = this.options.page > 0 ? (this.options.page - 1) * this.options.itemsPerPage : 0
       const find = {}
-      if (this.search) find.name = { $regex: new RegExp(this.search, 'i') }
+      if (this.search) find.name = { $regex: new RegExp(this.search) }
       if (this.searchTags.length) {
         // find.tags = { $in: this.searchTags }
         find['$and'] = []
