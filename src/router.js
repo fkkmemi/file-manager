@@ -15,6 +15,11 @@ export default new Router({
       path: '/main',
       name: 'main',
       component: () => import('./views/Main.vue')
+    },
+    {
+      path: '/MySQL',
+      name: 'MySQL',
+      component: () => import('./views/MySQL.vue')
     }
   ]
 })

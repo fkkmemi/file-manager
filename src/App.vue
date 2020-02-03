@@ -9,6 +9,9 @@
       <v-btn icon v-if="$route.path === '/main'" @click="$router.push('/')">
         <v-icon>mdi-lock-open</v-icon>
       </v-btn>
+      <v-btn icon @click="$router.push('/MySQL')">
+        <v-icon>mdi-database</v-icon>
+      </v-btn>
     </v-app-bar>
 
     <v-content>
